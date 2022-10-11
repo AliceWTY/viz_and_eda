@@ -46,9 +46,11 @@ What the r chunk did:
 
 
 
+
+
 ## Scatter Plots
 
-```{r}
+```{r warning = FALSE}
 ggplot(weather_df, aes(x = tmin, y = tmax)) + 
   geom_point()
 ```
@@ -59,20 +61,23 @@ Typically, when we use `ggplot`
 2. `aes()`defining aesthetic mappings
 3. choose the geomatrics
 
+
+
 #### New approach, same graph.
 
 - The code below could be used instead to produce the same figure. Using this style can be helpful if you want to do some pre-processing before making your plot but don’t want to save the intermediate data.
-```{r}
+```{r warning = FALSE}
 weather_df %>%
   ggplot(aes(x = tmin, y = tmax)) + 
   geom_point()
 ```
 
 
+
 #### Also
 
 We can also save the output of `ggplot()` to an object that can be printed and modified later.
-```{r}
+```{r warning = FALSE}
 plot_weather = 
   weather_df %>%
   ggplot(aes(x = tmin, y = tmax)) 
@@ -83,11 +88,13 @@ plot_weather + geom_point()
 
 
 
+
+
 ## Advanced Scatterplot
 
 #### `color` and `geom_smooth`
 
-```{r}
+```{r warning = FALSE}
 ggplot(weather_df, aes(x = tmin, y = tmax, color = name)) + 
   geom_point() + 
   geom_smooth(se = FALSE)
@@ -98,7 +105,7 @@ How did we make it fancy:
 - `geom_smooth` additional geometry that can add to the plot which generate a smooth trajectery for the data
 
 
-```{r}
+```{r warning = FALSE}
 ggplot(weather_df, aes(x = tmin, y = tmax)) + 
   geom_point(aes(color = name)) + 
   geom_smooth()
@@ -106,9 +113,10 @@ ggplot(weather_df, aes(x = tmin, y = tmax)) +
 In this r chunk, colors only apply for the geom_point. Color is not defined in the general aesthetic mappings, so we only generated one smooth line through `geom_smooth`.
 
 
+
 #### `alpha` in `geom_print`
 
-```{r}
+```{r warning = FALSE}
 ggplot(weather_df, aes(x = tmin, y = tmax, color = name)) + 
   geom_point(alpha = 0.5) + 
   geom_smooth(se = FALSE) +
@@ -121,9 +129,10 @@ What we added:
 - `alpha = 0.5` in `geom_point` changes the transperancy level
 
 
+
 #### `alpha` in global/general setting
 
-```{r}
+```{r warning = FALSE}
 ggplot(weather_df, aes(x = tmin, y = tmax, alpha = tmin, color = name)) + 
   geom_point() + 
   geom_smooth(se = FALSE) +
@@ -134,10 +143,11 @@ What we changed:
 - `alpha = tmin` in `aes()` gives a color gradient in the plot. the smaller "tmin" has more transparent color
 
 
+
 #### New plot: Sizing the data point based on a variable
 
 We sized the data point based on the "prcp" variable, where the higher "prcp" the bigger the data point showed on graph, via `geom_point(aes(size = prcp))`.
-```{r}
+```{r warning = FALSE}
 weather_df %>% 
   ggplot(aes(x = date, y = tmax, color = name)) + 
   geom_point(aes(size = prcp), alpha = 0.5) +
@@ -147,19 +157,23 @@ weather_df %>%
 
 
 
+
+
 ## Some Notes
 
 ### We can have whatever geoms we want. The number of geoms is not limited.
 
 ##### Having one gemo.
-```{r}
+```{r warning = FALSE}
 weather_df %>% 
   ggplot(aes(x = tmin, y = tmax, color = name)) + 
   geom_smooth(se = FALSE)
 ```
 
+
+
 ##### Having two gemos.
-```{r}
+```{r warning = FALSE}
 weather_df %>% 
   ggplot(aes(x = tmin, y = tmax, color = name)) + 
   geom_point() + 
@@ -167,26 +181,31 @@ weather_df %>%
 ```
 
 
+
 ### We can have a neat geom. 
 
 ##### `geom_hex()`
 The `geom_hex()` shows as hexagens.
-```{r}
+```{r warning = FALSE}
 weather_df %>% 
   ggplot(aes(x = tmin, y = tmax)) + 
   geom_hex()
 ```
 
+
+
 ##### Or `geom_bin2d()`
 The `geom_bin2d()` shows as squares.
-```{r}
+```{r warning = FALSE}
 weather_df %>% 
   ggplot(aes(x = tmin, y = tmax)) + 
   geom_bin2d()
 ```
 
+
+
 ##### Or something looks like a elevation map
-```{r}
+```{r warning = FALSE}
 weather_df %>% 
   ggplot(aes(x = tmin, y = tmax)) + 
   geom_density2d() + 
@@ -195,18 +214,20 @@ weather_df %>%
 
 
 
+
+
 ## Univariate Plots
 
 ### Histograms
 
-```{r}
+```{r warning = FALSE}
 weather_df %>% 
   ggplot(aes(x = tmin)) +
   geom_histogram()
 ```
 
 Add color in histogram.
-```{r}
+```{r warning = FALSE}
 weather_df %>% 
   ggplot(aes(x = tmin, color = name)) +
   geom_histogram()
@@ -217,7 +238,7 @@ This graph looks weired, so we want to change:
 - change the histograms' positions and make them aside to each other, via `position = "dodge"`
 
 
-```{r}
+```{r warning = FALSE}
 weather_df %>% 
   ggplot(aes(x = tmin, fill = name)) +
   geom_histogram(position = "dodge")
@@ -225,7 +246,7 @@ weather_df %>%
 
 
 We can also change the position by separating the graph into 3 graphs, where each graph contains histograms for one location only.
-```{r}
+```{r warning = FALSE}
 weather_df %>% 
   ggplot(aes(x = tmin, fill = name)) +
   geom_histogram() +
@@ -237,7 +258,7 @@ weather_df %>%
 ### New geometry `geom_density`
 
 `geom_density` kind of smooth out the edges of the histograms. It shows the overall shape of the distribution, but we will lose those little bumps.
-```{r}
+```{r warning = FALSE}
 weather_df %>% 
   ggplot(aes(x = tmin, fill = name)) +
   geom_density(alpha = 0.4)
@@ -247,14 +268,14 @@ weather_df %>%
 
 ### Boxplots
 
-```{r}
+```{r warning = FALSE}
 weather_df %>% 
   ggplot(aes(y = tmin)) +
   geom_boxplot()
 ```
 
 We stratify the data points based on locations ("name").
-```{r}
+```{r warning = FALSE}
 weather_df %>% 
   ggplot(aes(x = name, y = tmin)) +
   geom_boxplot()
@@ -266,7 +287,7 @@ weather_df %>%
 
 ##### Violin Plot
 
-```{r}
+```{r warning = FALSE}
 weather_df %>% 
   ggplot(aes(x = name, y = tmin, fill = name)) +
   geom_violin(alpha = 0.5) +
@@ -279,9 +300,36 @@ We can add statistic features/functions in the plot by using `stat_summary(fun =
 
 ##### Ridge plot - the most popular plot of 2017
 
-```{r}
+```{r warning = FALSE}
 weather_df %>% 
   ggplot(aes(x = tmin, y = name, fill = name)) +
   geom_density_ridges(alpha = 0.5)
 ```
 Ridge plots show you the distributions. 
+
+
+
+
+
+## Save and Embed
+
+```{r}
+weather_plot = 
+  weather_df %>% 
+  ggplot(aes(x = tmin, y = tmax, color = name)) + 
+  geom_point(alpha = .5)
+
+ggsave("./results/weather_plot.pdf", weather_plot, width = 8, height = 5)
+```
+
+
+What about embedding...
+```{r, fig.width=6, fig.height=3}
+weather_plot
+```
+
+
+Embed at a different size.
+```{r, fig.width=12, fig.height=6}
+weather_plot
+```
