@@ -13,7 +13,7 @@ library(ggridges)
 
 ## Load the Weather Data
 
-```{r warning = FALSE, eval = FALSE}
+```{r warning = FALSE}
 weather_df = 
   rnoaa::meteo_pull_monitors(
     c("USW00094728", "USC00519397", "USS0023B17S"),
@@ -45,4 +45,39 @@ What the r chunk did:
   - `select()` is similiar to relocate, it's used to manipulate the column order
 
 
+
+## Scatter Plots
+
+```{r}
+ggplot(weather_df, aes(x = tmin, y = tmax)) + 
+  geom_point()
+```
+
+Typically, when we use `ggplot`
+
+1. choose the data frame
+2. `aes()`defining aesthetic mappings
+3. choose the geomatrics
+
+#### New approach, same graph.
+
+- The code below could be used instead to produce the same figure. Using this style can be helpful if you want to do some pre-processing before making your plot but don’t want to save the intermediate data.
+```{r}
+weather_df %>%
+  ggplot(aes(x = tmin, y = tmax)) + 
+  geom_point()
+```
+
+
+#### Also
+
+We can also save the output of `ggplot()` to an object that can be printed and modified later.
+```{r}
+plot_weather = 
+  weather_df %>%
+  ggplot(aes(x = tmin, y = tmax)) 
+
+plot_weather + geom_point()
+
+```
 
