@@ -1,0 +1,48 @@
+---
+title: "Visualization"
+subtitle: "Part I"
+author: "Tianyou Wang"
+date: "2022-10-11"
+output: html_document
+---
+
+```{r setup}
+library(tidyverse)
+library(ggridges)
+```
+
+## Load the Weather Data
+
+```{r warning = FALSE, eval = FALSE}
+weather_df = 
+  rnoaa::meteo_pull_monitors(
+    c("USW00094728", "USC00519397", "USS0023B17S"),
+    var = c("PRCP", "TMIN", "TMAX"), 
+    date_min = "2017-01-01",
+    date_max = "2017-12-31") %>%
+  mutate(
+    name = recode(
+      id, 
+      USW00094728 = "CentralPark_NY", 
+      USC00519397 = "Waikiki_HA",
+      USS0023B17S = "Waterhole_WA"),
+    tmin = tmin / 10,
+    tmax = tmax / 10) %>%
+  select(name, id, everything())
+
+weather_df
+```
+
+What the r chunk did:
+
+- searching online for the data we want
+  - `rnoaa` package allows us to read public data online instead of reading excel, csv files
+  - `meteo_pull_monitors(c())` pull the monitors we want, in this case we are getting weather data from "USW", "USC", and "USS" stations
+  - `var = c()` bring the variables we want
+  - `data_min` and `data_mx` are used to set the starting and ending date we are interested
+- data manipulation through `mutate()`
+  - `name = recode` is used to rename variables
+  - `select()` is similiar to relocate, it's used to manipulate the column order
+
+
+
