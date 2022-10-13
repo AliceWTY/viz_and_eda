@@ -1,6 +1,6 @@
 ---
 title: "Visualization"
-subtitle: "Part I"
+subtitle: "Part II"
 author: "Tianyou Wang"
 date: "2022-10-11"
 output: html_document
@@ -32,4 +32,97 @@ weather_df =
 
 weather_df
 ```
+
+
+
+## *Labels*
+
+Providing informative axis labels, plot titles, and captions, via `labs(title = "", x = "", y = "", caption = "")`.
+```{r Warning = FALSE}
+weather_df %>% 
+  ggplot(aes(x = tmin, y = tmax)) + 
+  geom_point(aes(color = name), alpha = .5) + 
+  labs(
+    title = "Temperature plot",
+    x = "Minimum daily temperature (C)",
+    y = "Maxiumum daily temperature (C)",
+    caption = "Data from the rnoaa package; temperatures in 2017"
+  )
+```
+
+
+
+## *Scales*
+We can set scales for x and y axis by using `scale_x_continuous()`. We can also label them by using `labels = c()` inside of `scale_x_continuous()`.
+
+```{r Warning = FALSE}
+weather_df %>% 
+  ggplot(aes(x = tmin, y = tmax)) + 
+  geom_point(aes(color = name), alpha = .5) + 
+  labs(
+    title = "Temperature plot",
+    x = "Minimum daily temperature (C)",
+    y = "Maxiumum daily temperature (C)",
+    caption = "Data from the rnoaa package; temperatures in 2017") + 
+  scale_x_continuous(
+    breaks = c(-15, 0, 15), 
+    labels = c("-15ºC", "0", "15ºC")) +
+  scale_y_continuous(
+    trans = "sqrt",
+    position = "right"
+  )
+```
+
+What we did for the x, y-axis scales:
+
+- `breaks = c()` setting the scale points, seperated by commas
+- `labels = c()` choice how we label the scale points, such as adding units
+- `trans = ""` is used to transform the data, such as trans = "sqrt" (square root) and trans = "log"
+- `position = "right"` putting the scale discription on the right side of graph
+
+
+
+### Color Scales
+```{r Warning = FALSE}
+weather_df %>% 
+  ggplot(aes(x = tmin, y = tmax)) + 
+  geom_point(aes(color = name), alpha = .5) + 
+  labs(
+    title = "Temperature plot",
+    x = "Minimum daily temperature (C)",
+    y = "Maxiumum daily temperature (C)",
+    caption = "Data from the rnoaa package; temperatures in 2017") + 
+  scale_color_hue(
+    name = "Location",
+    h = c(100, 300))
+```
+
+Using `name = "xxx"` to rename the coloring variance, in this case we use 
+(name = "Location") to change our variable "name" to "Location". Note: the variable "name" accidentally shared the same name with the (name = "xxx") command.
+
+The default hue is "h = c(1, 360)"
+
+
+
+### Viridis Package for Color Scheme
+Trying to create your own color scheme usually doesn’t go well. You can use the "viridis package" instead. There are several options, but the default color scheme works nicely!
+
+Note: `viridis::scale_color_viridis()` assume the variable you put in is a continuous variable. If we are applying it to a discrete variable (this case, location,) we want to write `discrete = TRUE` inside the scale_color_viridis command.
+
+```{r Warning = FALSE}
+weather_df %>% 
+  ggplot(aes(x = tmin, y = tmax)) + 
+  geom_point(aes(color = name), alpha = .5) + 
+  labs(
+    title = "Temperature plot",
+    x = "Minimum daily temperature (C)",
+    y = "Maxiumum daily temperature (C)",
+    caption = "Data from the rnoaa package; temperatures in 2017") + 
+  viridis::scale_color_viridis(
+    name = "Location",
+    discrete = TRUE)
+```
+
+
+
 
