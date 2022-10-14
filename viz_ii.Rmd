@@ -216,7 +216,7 @@ ggp_temp_plot +
 
 
 
-## Setting Opotions
+## *Setting Opotions*
 
 In addition to figure sizing, I include a few other figure preferences in global options declared at the outset of each .Rmd file (this code chunk just gets copy-and-pasted to the beginning of every new file).
 
@@ -248,6 +248,77 @@ What we did in this code chunk:
 - `out.width` let the figure sit bit away from the margins
 - `theme_set` setting the graphic themes
 - setting color and fill preferences globally through `options()`
+
+
+
+
+
+## *Data Argument in `geom`*
+
+It’s sometimes necessary to overlay data summaries on a plot of the complete data. Depending on the setting, one way to do this is to create a “summary” dataframe and use that when adding a new geom to a ggplot based on the full data.
+
+
+We can split "weather_df" into separate datasets for Central Park and Waikiki. Then we use one dataset in the `ggplot()` and use another in `geom_line()` inside of `ggplot()`. 
+
+
+Note: we only changed the data set used in `geom_line()`, it still adopt the global `aes()` settings.
+
+```{r}
+central_park = 
+  weather_df %>% 
+  filter(name == "CentralPark_NY")
+
+waikiki = 
+  weather_df %>% 
+  filter(name == "Waikiki_HA")
+
+ggplot(data = waikiki, aes(x = date, y = tmax, color = name)) + 
+  geom_point() + 
+  geom_line(data = central_park)
+```
+
+
+
+
+
+## *`patchwork`*
+
+Remember faceting? We’ve seen facetting as an approach to create the “same type of plots” for several levels of a categorical variable.
+
+```{r warning=FALSE}
+weather_df %>%
+  ggplot(aes(x = tmin, fill = name)) +
+  geom_density(alpha = 0.5) +
+  facet_grid(. ~name)
+```
+
+What happen when you want multiple plots but cannot facet...?
+Sometimes, we want to combine two or three fundamentally different plots in the same graphic, such as showing a scatterplot and a boxplot, or show scatterplots illustrating relationships between different variables. In this case, the solution is to create each of the panels you want separately and combine panels using tools in the `patchwork` package which is loaded in the beginning of this R_Markdown file.
+
+```{r warning=FALSE}
+tmax_tmin_p = 
+  weather_df %>% 
+  ggplot(aes(x = tmax, y = tmin, color = name)) + 
+  geom_point(alpha = .5) +
+  theme(legend.position = "none")
+
+prcp_dens_p = 
+  weather_df %>% 
+  filter(prcp > 0) %>% 
+  ggplot(aes(x = prcp, fill = name)) + 
+  geom_density(alpha = .5) + 
+  theme(legend.position = "none")
+
+tmax_date_p = 
+  weather_df %>% 
+  ggplot(aes(x = date, y = tmax, color = name)) + 
+  geom_point(alpha = .5) +
+  geom_smooth(se = FALSE) + 
+  theme(legend.position = "bottom")
+
+(tmax_tmin_p + prcp_dens_p) / tmax_date_p
+```
+
 
 
 
