@@ -322,3 +322,147 @@ tmax_date_p =
 
 
 
+
+## *Data Manipulation*
+
+The behavior of plot depends on the data we have supplied. In some cases, it’s easier to control behavior through data manipulation than it is through the plot code.
+
+This is particularly true for the order of categorical or factor variables in plots (this case, "name" variable.) Categorical variables will be ordered alphabetically. Factors will follow the specified order level that underlies the variable labels. We can change the order level of a factor variable to your specified preference using `forcats::fct_relevel` or according to the value of another variable using `forcats::fct_reorder`.
+
+```{r warning=FALSE}
+weather_df %>%
+  mutate(
+    name = factor(name),
+    name = forcats::fct_relevel(name, c("Waikiki_HA", "CentralPark_NY", "Waterhole_WA"))) %>% 
+  ggplot(aes(x = name, y = tmax)) + 
+  geom_violin(aes(fill = name), color = "blue", alpha = .5) + 
+  theme(legend.position = "bottom")
+```
+
+
+Note: changing the categorical "name" to factor, via `name = factor(name)` is not necessary.
+```{r warning=FALSE}
+weather_df %>%
+  mutate(
+    name = forcats::fct_relevel(name, c("Waikiki_HA", "CentralPark_NY", "Waterhole_WA"))) %>% 
+  ggplot(aes(x = name, y = tmax)) + 
+  geom_violin(aes(fill = name), color = "blue", alpha = .5) + 
+  theme(legend.position = "bottom")
+```
+
+
+We reorders "name" according to tmax values in each "name."
+```{r warning=FALSE}
+weather_df %>%
+  mutate(
+    name = forcats::fct_reorder(name, tmax)) %>% 
+  ggplot(aes(x = name, y = tmax)) + 
+  geom_violin(aes(fill = name), color = "blue", alpha = .5) + 
+  theme(legend.position = "bottom")
+```
+
+
+
+
+## *Other Examples*
+
+### Weather_df
+
+What if We wanted density graph for tmin and tmax simultaneously?
+
+We want to facet panels across the "name" variable, and create separate density plots for tmax and tmin in each panel. Unfortunately, weather_df isn’t organized in a way that makes this easy.
+
+One solution would recognize that tmax and tmin are separate observation types of a shared temperature variable. With this understanding, we can shift the data into long format which can be used to make the plot directly:
+
+```{r warning=FALSE}
+weather_df %>%
+  select(name, tmax, tmin) %>%
+  pivot_longer(
+    tmax:tmin,
+    names_to = "observation",
+    values_to = "temperature"
+  ) %>%
+  ggplot(aes(x = temperature, fill = observation)) +
+  geom_density(alpha = 0.5) +
+  facet_grid(. ~ name)
+```
+
+
+If we only want to make the graph for CentralPark_NY, we can fillter the info out from the weather_df first.
+
+```{r warning=FALSE}
+weather_df %>%
+  filter(name == "CentralPark_NY") %>%
+  pivot_longer(
+    tmax:tmin,
+    names_to = "observation",
+    values_to = "temperatures"
+  ) %>%
+  ggplot(aes(x = temperatures, fill = observation)) +
+  geom_density(alpha = 0.5)
+```
+
+
+### PULSE Data
+
+The code below imports and tidies the PULSE data, and creates boxplots showing BDI score across visits. Using `pivot_longer` to organize the BDI score and visit time variables, and organizing the visit time variable into a factor with an informative ordering.
+
+```{r warning=FALSE}
+pulse_data = 
+  haven::read_sas("./data/public_pulse_data.sas7bdat") %>%
+  janitor::clean_names() %>%
+  pivot_longer(
+    bdi_score_bl:bdi_score_12m,
+    names_to = "visit", 
+    names_prefix = "bdi_score_",
+    values_to = "bdi") %>%
+  select(id, visit, everything()) %>%
+  mutate(
+    visit = recode(visit, "bl" = "00m"),
+    visit = factor(visit, levels = str_c(c("00", "01", "06", "12"), "m"))) %>%
+  arrange(id, visit)
+
+ggplot(pulse_data, aes(x = visit, y = bdi, fill = visit)) + 
+  geom_boxplot()
+```
+
+Note: `visit = factor(visit, levels = str_c(c("00", "01", "06", "12"), "m"))` is used to order the factor level. So, we see "00m" at the most left of the graph, and "12m" locates at the most right of the graph.
+
+
+
+### FAS Data
+
+We’ve seen code for data import and organization and for joining the litters and pups data. Here we add some data tidying steps to view pup-level outcomes (such as, post-natal day on which ears “work”, on which the pup can walk, etc.) across values of dose category and treatment day.
+
+```{r warning=FALSE}
+pup_data = 
+  read_csv("./data/FAS_pups.csv", col_types = "ciiiii") %>%
+  janitor::clean_names() %>%
+  mutate(sex = recode(sex, `1` = "male", `2` = "female")) 
+
+litter_data = 
+  read_csv("./data/FAS_litters.csv", col_types = "ccddiiii") %>%
+  janitor::clean_names() %>%
+  separate(group, into = c("dose", "day_of_tx"), sep = 3)
+
+fas_data = left_join(pup_data, litter_data, by = "litter_number") 
+
+fas_data %>% 
+  select(sex, dose, day_of_tx, pd_ears:pd_walk) %>% 
+  pivot_longer(
+    pd_ears:pd_walk,
+    names_to = "outcome", 
+    values_to = "pn_day") %>% 
+  drop_na() %>% 
+  mutate(outcome = forcats::fct_reorder(outcome, pn_day, median)) %>% 
+  ggplot(aes(x = dose, y = pn_day)) + 
+  geom_violin() + 
+  facet_grid(day_of_tx ~ outcome)
+```
+
+Note:
+
+1. `select(sex, dose, day_of_tx, pd_ears:pd_walk)` can be achieved by `select(sex, dose, day_of_tx, starts_with("pd_))` too.
+
+2. `forcats::fct_reorder(outcome, pn_day, median)` let R reorder "outcome" based on the median "pn_day". It can also be achieved, through a less general way, via `forcats::fct_reorder(outcome, "pd_ears", "pd_pivot", "pd_walk", "pd_eyes")`.
+
