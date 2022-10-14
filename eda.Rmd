@@ -82,3 +82,58 @@ weather_df %>%
   group_by(name, month) %>% 
   ungroup(month)
 ```
+
+
+
+
+## *Counting Things*
+
+### `summarize()` 
+
+We will frequently use `summarize()` to create one-number-variable that summaries within each group, or use `mutate()` to define variables within groups. 
+
+For example, counting the number of observations in each month.
+```{r}
+weather_df %>%
+  group_by(month) %>%
+  summarize(n_obs = n())
+```
+
+
+*** `count()`
+We can also use `count()` in place of `group_by()` and `summarize()`.
+```{r}
+weather_df %>%
+  count(name, month, name = "n_obs")
+```
+
+
+**Never** use base R's `table()` function!!!
+`count()` is a useful tidyverse alternative to Base R’s `table()` function. Both functions produce summaries of how often values appear (number of occurrences), but table’s output is a classic n*2 table and is hard to do any additional work with it. `count()` adds one or more numeric columns to the original data frame, which can be used or manipulated later directly. For an example, run the code below and check the classic 12-by-2 table.
+
+```{r}
+weather_df %>%
+  pull(month) %>% 
+  table()
+```
+
+
+
+### Other helpful counters
+
+We can use `summarize()` to compute *multiple summaries* within each group; creating multiple numeric columns. As an example, we count the number of observations in each month and the number of distinct dates in each month.
+```{r}
+weather_df %>%
+  group_by(month) %>%
+  summarize(
+    n_obs = n(),
+    n_days = n_distinct(date))
+```
+
+
+
+
+
+
+
+
