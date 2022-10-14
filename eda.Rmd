@@ -34,7 +34,7 @@ scale_fill_discrete = scale_fill_viridis_d
 
 
 ## Load the Weather Data
-
+`lubridate::floor_date(date, unit = "month")` round the days to the first day of the month.
 ```{r warning = FALSE}
 weather_df =  
   rnoaa::meteo_pull_monitors(
@@ -57,3 +57,28 @@ weather_df
 ```
 
 
+
+
+
+##  *`group_by`*
+
+Datasets are often comprised of groups defined by one or more (categorical) variable; group_by() makes these groupings explicit so that they can be included in subsequent operations. For example, we might group weather_df by name, which give us 3 groups.
+```{r}
+weather_df %>%
+  group_by(name)
+```
+
+
+For example, we might group weather_df by name and month, which give us 36 groups.
+```{r}
+weather_df %>%
+  group_by(name, month)
+```
+
+
+We can also ungroup after we group.
+```{r}
+weather_df %>%
+  group_by(name, month) %>% 
+  ungroup(month)
+```
