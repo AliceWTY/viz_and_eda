@@ -155,7 +155,7 @@ weather_df %>%
 ```
 
 
-We can also creating the 2-by-2 table through `janitor::tabyl(1-, 2-, or 3-way )`
+We get a “tidy” table in the previous example, and that's also a data frame. We could re-organize it into a more standard (non-tidy) 2x2 table using `pivot_wider`, or you could use `janitor::tabyl(1-, 2-, or 3-way )`.
 ```{r}
 weather_df %>% 
   filter(name != "Waikiki_HA") %>% 
@@ -167,6 +167,63 @@ weather_df %>%
   )) %>% 
   janitor::tabyl(name, cold)
 ```
+
+
+
+
+## *General Summaries*
+
+Standard statistical summaries are regularly computed in `summarize()` using functions like `mean()`, `median()`, `var()`, `sd()`, `mad()`, `IQR()`, `min()`, and `max()`. To use these, you put the variable to which they apply in the function. We can also include any additional arguments as necessary, such as `na.rm = TRUE` which get ride off the missing value.
+
+```{r}
+weather_df %>%
+  group_by(month) %>%
+  summarize(
+    mean_tmax = mean(tmax, na.rm = TRUE),
+    mean_prec = mean(prcp, na.rm = TRUE),
+    median_tmax = median(tmax, na.rm = TRUE),
+    sd_tmax = sd(tmax, na.rm = TRUE))
+```
+
+
+If you want to summarize multiple columns using the same summary, the `across()` function is helpful. Under this example, R calculate mean for variable tmin to prcp.
+```{r}
+weather_df %>%
+  group_by(name, month) %>%
+  summarize(across(tmin:prcp, mean))
+```
+
+
+
+The fact that `summarize()` produces a data frame is important. We can incorporate grouping and summarizing within broader analysis pipelines. For example, we can create a plot based on the monthly summary:
+```{r}
+weather_df %>%
+  group_by(name, month) %>%
+  summarize(mean_tmax = mean(tmax, na.rm = TRUE),
+            mean_prec = mean(prcp, na.rm = TRUE),
+            median_tmax = median(tmax, na.rm = TRUE)
+            ) %>%
+  ggplot(aes(x = month, y = mean_tmax, color = name)) + 
+  geom_point() + 
+  geom_line() + 
+  theme(legend.position = "bottom")
+```
+
+
+Reminder: sometimes your results are easier to read in another format.
+Note: `knitr::kable` is a table generator, which create tables in R_Markdown, Html, LaTex..... We can also add design decisions, such as `digits = 1` which saves numbers in 1 decimal place.
+```{r}
+weather_df %>%
+  group_by(name, month) %>%
+  summarize(mean_tmax = mean(tmax)) %>% 
+  pivot_wider(
+    names_from = name,
+    values_from = mean_tmax) %>% 
+  knitr::kable(digits = 1)
+```
+
+
+
 
 
 
