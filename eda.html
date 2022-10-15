@@ -576,6 +576,52 @@ number of distinct dates in each month.</p>
 ## 12 2017-12-01    93     31</code></pre>
 </div>
 </div>
+<div id="a-digression-on-2-by-2-tablee" class="section level2">
+<h2>A digression on 2-by-2 tablee</h2>
+<p>Let’s say we want to look at the number of cold and not-cold days in
+Central Park and Waterhole. We can do this with some extra data
+manipulation steps through <code>group_by</code> and
+<code>summarize</code>. Note:</p>
+<ul>
+<li><code>!=</code> means not equal to..</li>
+<li><code>TRUE      ~ &quot;&quot;</code> if there is thing don’t fill in any
+group, just assign “”</li>
+</ul>
+<pre class="r"><code>weather_df %&gt;% 
+  filter(name != &quot;Waikiki_HA&quot;) %&gt;% 
+  mutate(
+    cold = case_when(
+      tmax &lt;  5 ~ &quot;cold&quot;,
+      tmax &gt;= 5 ~ &quot;not_cold&quot;,
+      TRUE      ~ &quot;&quot;
+  )) %&gt;% 
+  group_by(name, cold) %&gt;% 
+  summarize(count = n())</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;name&#39;. You can override using the
+## `.groups` argument.</code></pre>
+<pre><code>## # A tibble: 4 × 3
+## # Groups:   name [2]
+##   name           cold     count
+##   &lt;chr&gt;          &lt;chr&gt;    &lt;int&gt;
+## 1 CentralPark_NY cold        44
+## 2 CentralPark_NY not_cold   321
+## 3 Waterhole_WA   cold       172
+## 4 Waterhole_WA   not_cold   193</code></pre>
+<p>We can also creating the 2-by-2 table through
+<code>janitor::tabyl(1-, 2-, or 3-way )</code></p>
+<pre class="r"><code>weather_df %&gt;% 
+  filter(name != &quot;Waikiki_HA&quot;) %&gt;% 
+  mutate(
+    cold = case_when(
+      tmax &lt;  5 ~ &quot;cold&quot;,
+      tmax &gt;= 5 ~ &quot;not_cold&quot;,
+      TRUE      ~ &quot;&quot;
+  )) %&gt;% 
+  janitor::tabyl(name, cold)</code></pre>
+<pre><code>##            name cold not_cold
+##  CentralPark_NY   44      321
+##    Waterhole_WA  172      193</code></pre>
+</div>
 
 
 

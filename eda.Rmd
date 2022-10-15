@@ -133,6 +133,40 @@ weather_df %>%
 
 
 
+## A digression on 2-by-2 tablee
+
+Let’s say we want to look at the number of cold and not-cold days in Central Park and Waterhole. We can do this with some extra data manipulation steps through `group_by` and `summarize`.
+Note: 
+
+- `!=` means not equal to..
+- `TRUE      ~ ""` if there is thing don't fill in any group, just assign ""
+
+```{r}
+weather_df %>% 
+  filter(name != "Waikiki_HA") %>% 
+  mutate(
+    cold = case_when(
+      tmax <  5 ~ "cold",
+      tmax >= 5 ~ "not_cold",
+      TRUE      ~ ""
+  )) %>% 
+  group_by(name, cold) %>% 
+  summarize(count = n())
+```
+
+
+We can also creating the 2-by-2 table through `janitor::tabyl(1-, 2-, or 3-way )`
+```{r}
+weather_df %>% 
+  filter(name != "Waikiki_HA") %>% 
+  mutate(
+    cold = case_when(
+      tmax <  5 ~ "cold",
+      tmax >= 5 ~ "not_cold",
+      TRUE      ~ ""
+  )) %>% 
+  janitor::tabyl(name, cold)
+```
 
 
 
