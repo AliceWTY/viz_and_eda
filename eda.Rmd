@@ -63,21 +63,21 @@ weather_df
 ##  *`group_by`*
 
 Datasets are often comprised of groups defined by one or more (categorical) variable; group_by() makes these groupings explicit so that they can be included in subsequent operations. For example, we might group weather_df by name, which give us 3 groups.
-```{r}
+```{r warning = FALSE}
 weather_df %>%
   group_by(name)
 ```
 
 
 For example, we might group weather_df by name and month, which give us 36 groups.
-```{r}
+```{r warning = FALSE}
 weather_df %>%
   group_by(name, month)
 ```
 
 
 We can also ungroup after we group.
-```{r}
+```{r warning = FALSE}
 weather_df %>%
   group_by(name, month) %>% 
   ungroup(month)
@@ -93,7 +93,7 @@ weather_df %>%
 We will frequently use `summarize()` to create one-number-variable that summaries within each group, or use `mutate()` to define variables within groups. 
 
 For example, counting the number of observations in each month.
-```{r}
+```{r warning = FALSE}
 weather_df %>%
   group_by(month) %>%
   summarize(n_obs = n())
@@ -102,7 +102,7 @@ weather_df %>%
 
 *** `count()`
 We can also use `count()` in place of `group_by()` and `summarize()`.
-```{r}
+```{r warning = FALSE}
 weather_df %>%
   count(name, month, name = "n_obs")
 ```
@@ -111,7 +111,7 @@ weather_df %>%
 **Never** use base R's `table()` function!!!
 `count()` is a useful tidyverse alternative to Base R’s `table()` function. Both functions produce summaries of how often values appear (number of occurrences), but table’s output is a classic n*2 table and is hard to do any additional work with it. `count()` adds one or more numeric columns to the original data frame, which can be used or manipulated later directly. For an example, run the code below and check the classic 12-by-2 table.
 
-```{r}
+```{r warning = FALSE}
 weather_df %>%
   pull(month) %>% 
   table()
@@ -121,8 +121,8 @@ weather_df %>%
 
 ### Other helpful counters
 
-We can use `summarize()` to compute *multiple summaries* within each group; creating multiple numeric columns. As an example, we count the number of observations in each month and the number of distinct dates in each month.
-```{r}
+We can use `summarize()` to compute *multiple summaries* within each group. As an example, we count the number of observations in each month and the number of distinct dates in each month.
+```{r warning = FALSE}
 weather_df %>%
   group_by(month) %>%
   summarize(
@@ -141,7 +141,7 @@ Note:
 - `!=` means not equal to..
 - `TRUE      ~ ""` if there is thing don't fill in any group, just assign ""
 
-```{r}
+```{r warning = FALSE}
 weather_df %>% 
   filter(name != "Waikiki_HA") %>% 
   mutate(
@@ -156,7 +156,7 @@ weather_df %>%
 
 
 We get a “tidy” table in the previous example, and that's also a data frame. We could re-organize it into a more standard (non-tidy) 2x2 table using `pivot_wider`, or you could use `janitor::tabyl(1-, 2-, or 3-way )`.
-```{r}
+```{r warning = FALSE}
 weather_df %>% 
   filter(name != "Waikiki_HA") %>% 
   mutate(
@@ -175,7 +175,7 @@ weather_df %>%
 
 Standard statistical summaries are regularly computed in `summarize()` using functions like `mean()`, `median()`, `var()`, `sd()`, `mad()`, `IQR()`, `min()`, and `max()`. To use these, you put the variable to which they apply in the function. We can also include any additional arguments as necessary, such as `na.rm = TRUE` which get ride off the missing value.
 
-```{r}
+```{r warning = FALSE}
 weather_df %>%
   group_by(month) %>%
   summarize(
@@ -187,7 +187,7 @@ weather_df %>%
 
 
 If you want to summarize multiple columns using the same summary, the `across()` function is helpful. Under this example, R calculate mean for variable tmin to prcp.
-```{r}
+```{r warning = FALSE}
 weather_df %>%
   group_by(name, month) %>%
   summarize(across(tmin:prcp, mean))
@@ -196,7 +196,7 @@ weather_df %>%
 
 
 The fact that `summarize()` produces a data frame is important. We can incorporate grouping and summarizing within broader analysis pipelines. For example, we can create a plot based on the monthly summary:
-```{r}
+```{r warning = FALSE}
 weather_df %>%
   group_by(name, month) %>%
   summarize(mean_tmax = mean(tmax, na.rm = TRUE),
@@ -212,7 +212,7 @@ weather_df %>%
 
 Reminder: sometimes your results are easier to read in another format.
 Note: `knitr::kable` is a table generator, which create tables in R_Markdown, Html, LaTex..... We can also add design decisions, such as `digits = 1` which saves numbers in 1 decimal place.
-```{r}
+```{r warning = FALSE}
 weather_df %>%
   group_by(name, month) %>%
   summarize(mean_tmax = mean(tmax)) %>% 
@@ -226,5 +226,79 @@ weather_df %>%
 
 
 
+## `group_by` and `mutate`
+
+`summarize()` collapses groups into single data points. In contrast, using `mutate()` in conjuntion with `group_by()` will retain all original data points and add new variables computed within groups.
+
+Suppose we want to compare the daily max temperature to the annual average max temperature for each station separately, and plot the result.
+
+```{r warning = FALSE}
+weather_df %>%
+  group_by(name) %>%
+  mutate(
+    mean_tmax = mean(tmax, na.rm = TRUE),
+    centered_tmax = tmax - mean_tmax) %>% 
+  ggplot(aes(x = date, y = centered_tmax, color = name)) + 
+    geom_point() 
+```
+
+
+
+
+
+## *Window functions*
+
+The previous example used `mean()` to compute the mean within each group. `mean()` takes n inputs and produces a single output. Window functions, in contrast, take n inputs and return n outputs, and the outputs depend on all the inputs.
+
+
+### ranking
+
+Note: `temp_ranking = min_rank(tmax)` ranks the tmax from low to high, it also assign numbers(ranks) in the "temp_ranking" variable. If we want the opposite order, we can use `temp_ranking = min_rank(desc(tmax)`.
+
+```{r warning = FALSE}
+weather_df %>%
+  group_by(name, month) %>%
+  mutate(temp_ranking = min_rank(tmax))
+```
+
+
+This sort of ranking is useful because we can filter data based on rank. We could, for example, keep only the day with the lowest max temperature within each month:
+```{r warning = FALSE}
+weather_df %>%
+  group_by(name, month) %>%
+  mutate(temp_ranking = min_rank(tmax)) %>% 
+  filter(min_rank(tmax) == 1)
+```
+
+
+Note: We can skip the `mutate()` statement that create a ranking variable, and gone straight to filtering based on the result. For example, we could also keep the three days with the highest max temperature:
+```{r warning = FALSE}
+weather_df %>%
+  group_by(name, month) %>%
+  filter(min_rank(desc(tmax)) < 4)
+```
+
+
+
+### lag
+
+Lags are used to compare an observation to it’s previous value. This is useful, for example, to find the day-by-day change in tmax within each station over the year.
+
+```{r warning = FALSE}
+weather_df %>%
+  group_by(name) %>%
+  mutate(temp_change = tmax - lag(tmax))
+```
+
+
+Then, we can find the largest one-day increase and std for day-by-day change in tmax :
+```{r warning = FALSE}
+weather_df %>%
+  group_by(name) %>%
+  mutate(temp_change = tmax - lag(tmax)) %>% 
+  summarize(
+    temp_change_sd = sd(temp_change, na.rm = TRUE),
+    temp_change_max = max(temp_change, na.rm = TRUE))
+```
 
 
